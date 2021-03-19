@@ -1,0 +1,47 @@
+version: '3'
+
+services:
+    admin_server:
+        build:
+            context: ./admin-server
+        image: 'admin-server'
+        container_name: 'admin_server'
+        environment:
+            - ADMIN_SERVER_INITDB_DATABASE=$ADMIN_SERVER_INITDB_DATABASE
+            - ADMIN_SERVER_INITDB_ROOT_USERNAME=$ADMIN_SERVER_INITDB_ROOT_USERNAME
+            - ADMIN_SERVER_INITDB_ROOT_PASSWORD=$ADMIN_SERVER_INITDB_ROOT_PASSWORD
+            - ADMIN_SERVER_INITDB_URL=$ADMIN_SERVER_INITDB_URL
+            - ADMIN_SERVER_PORT=$ADMIN_SERVER_PORT
+        ports:
+            - $ADMIN_SERVER_PORTS
+        expose:
+            - $ADMIN_SERVER_PORT
+        depends_on:
+            - mongodb      
+
+    admin_app:
+        build:
+            context:  ./admin-app
+        image: admin-app
+        container_name: admin_app
+        environment: 
+            - VUE_APP_ADMIN_DATA_SERVICE=$VUE_APP_ADMIN_DATA_SERVICE
+            - VUE_APP_ADMIN_API_URL=$VUE_APP_ADMIN_API_URL
+        ports:
+            - $VUE_APP_ADMIN_PORTS
+        expose:
+            - $VUE_APP_ADMIN_PORT
+        volumes:
+            - ./admin-app/dist:/app/dist
+        depends_on:
+            - admin_server
+
+    mongodb:
+        image: mongo
+        container_name: admin_db
+        ports:
+            - 27017:27017
+        expose:
+            - "27017"
+        volumes:
+            - ./mongo-volume:/data/db
